@@ -1,15 +1,29 @@
 <template>
-  <upload-file
-    v-if="! isFileUploaded"
-    v-on:uploadFile="processFileUpload"
-  ></upload-file>
-  <map-fields
-    v-else-if="! isMappingDone"
-  ></map-fields>
+  <div>
+    <upload-file
+      v-if="! isFileUploaded"
+      :upload-error="uploadError"
+      v-on:uploadFile="processFileUpload"
+    ></upload-file>
+    <map-fields
+      v-else-if="! isMappingDone"
+      :file-name="fileName"
+      :rows-count="rowsCount"
+      :columns-map="columnsMap"
+      :csv-headers="csvHeaders"
+      :mappings-error="mappingsError"
+      v-on:mappingsSaved="processMappings"
+    ></map-fields>
+    <contacts-list
+      :contacts="contacts"
+      v-if="isFileUploaded && isMappingDone"
+    ></contacts-list>
+  </div>
 </template>
 <script>
 import MapFields from '../components/MapFields.vue';
 import UploadFile from '../components/UploadFile.vue';
+import ContactsList from '../components/ContactsList.vue';
 
 export default {
   props: [
@@ -19,22 +33,34 @@ export default {
 
   components: {
     UploadFile,
-    MapFields
+    MapFields,
+    ContactsList
   },
 
   data() {
     return {
       isFileUploaded: false,
       isMappingDone: false,
+      rowsCount: 0,
+      uploadError: '',
+      mappingsError: '',
       fileName: '',
+      filePath: '',
+      csvHeaders: [],
+      contacts: [],
     }
   },
 
   methods: {
     processFileUpload(file) {
+      // Clean up the error
+      this.uploadError = '';
+
+      // Usual code for file uploads
       let formData = new FormData();
       formData.append('file', file);
 
+      // Upload the file
       axios.post(
         this.apiRoutes.processFile,
         formData,
@@ -43,12 +69,41 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
         }
-      ).then(() => {
-        
-      })
-      .catch(() => {
+      ).then((response) => {
+        if (! response.data.valid) {
+          // Display the returned error
+          this.uploadError = response.data.error;
+          return;
+        }
 
+        // Update data for the mapping component
+        this.rowsCount      = response.data.count;
+        this.fileName       = response.data.name;
+        this.csvHeaders     = response.data.headers;
+        this.filePath       = response.data.path;
+        this.isFileUploaded = true;
+      })
+      .catch((e) => {
+        this.uploadError = 'Something went wrong with the upload, please do try again'
       });
+    },
+
+    processMappings(mappings) {
+        this.mappingsError = '';
+        
+        axios.post(
+            this.apiRoutes.processMappings,
+            {
+                mappings,
+                path: this.filePath,
+            }
+        ).then((response) => {
+            this.contacts = response.data.contacts;
+            this.isMappingDone = true;
+        })
+        .catch(() => {
+            this.mappingsError = 'Something went wrong while processing the mappings, please do try again'
+        });
     }
   }
   

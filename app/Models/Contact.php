@@ -9,6 +9,8 @@ class Contact extends Model
 {
     use HasFactory;
 
+    public $guarded = [];
+
     public static $columnsMap = [
         'team_id' => 'Team ID',
         'name'    => 'Name',
@@ -16,4 +18,9 @@ class Contact extends Model
         'email'   => 'Email',
         'sticky_phone_number_id' => 'Sticky Phone Number ID',
     ];
+
+    public function customAttributes()
+    {
+        return $this->hasMany(CustomAttribute::class);
+    }
 }

@@ -28,7 +28,7 @@ class ApplicationTest extends TestCase
     /**
      * @test
      */
-    public function it_rejects_empty_csv_file()
+    public function it_reads_csv_file_correctly()
     {
 
     }
@@ -36,7 +36,7 @@ class ApplicationTest extends TestCase
     /**
      * @test
      */
-    public function it_reads_csv_file_correctly()
+    public function it_rejects_empty_csv_file()
     {
 
     }
