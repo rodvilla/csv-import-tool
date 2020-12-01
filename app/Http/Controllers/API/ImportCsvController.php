@@ -1,40 +1,25 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use App\Models\Contact;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProcessFileRequest;
+use App\Http\Requests\ProcessMappingsRequest;
 
 class ImportCsvController extends Controller
 {
-    public function processFile(Request $request)
+    public function processFile(ProcessFileRequest $request)
     {
-        $file = $request->file('file');
-
-        if (! $file->isValid()) {
-            return $this->errorResponse('Uploaded file is invalid');
-        }
-
-        try {
-            // Validate the MIME type
-            $validMimeTypes = ['text/x-comma-separated-values', 'text/comma-separated-values', 'application/octet-stream', 'application/vnd.ms-excel', 'application/x-csv', 'text/x-csv', 'text/csv', 'application/csv', 'application/excel', 'application/vnd.msexcel', 'text/plain'];
-            if (! in_array($file->getMimeType(), $validMimeTypes)) {
-                return $this->errorResponse('Invalid MIME type');
-            }
-        } catch (\Throwable $e) {
-            // Sometimes the getMimeType() function fails
-            return $this->errorResponse('Error while uploading the file');
-        }
+        $file = $request->validated()['file'];
 
         $contents = collect($this->readCsv($file));
 
-        // Validate file is not empty
-        if ($contents->isEmpty()) {
+        // Make sure the CSV file has at least one row besides the header
+        if ($contents->count() < 2) {
             return $this->errorResponse('File is empty');
         }
 
-        // Assume the first row is always headers just because
         return response()->json([
             'valid'   => true,
             'headers' => $contents->first(),
@@ -44,14 +29,10 @@ class ImportCsvController extends Controller
         ]);
     }
 
-    public function processMappings(Request $request)
+    public function processMappings(ProcessMappingsRequest $request)
     {
-        $mappings = $request->input('mappings');
-        $filePath = $request->input('path');
-
-        if (! Storage::exists($filePath)) {
-            return $this->errorResponse('The uploaded CSV doesn\'t exist anymore, try the upload again');
-        }
+        $mappings = $request->validated()['mappings'];
+        $filePath = $request->validated()['path'];
 
         // Read the file again
         $rows = $this->readCsv(storage_path('app/' . $filePath));

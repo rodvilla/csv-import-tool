@@ -2171,8 +2171,8 @@ __webpack_require__.r(__webpack_exports__);
         _this.csvHeaders = response.data.headers;
         _this.filePath = response.data.path;
         _this.isFileUploaded = true;
-      })["catch"](function (e) {
-        _this.uploadError = 'Something went wrong with the upload, please do try again';
+      })["catch"](function (error) {
+        _this.uploadError = error.response.data.errors.file[0] || 'Something went wrong with the upload, please do try again';
       });
     },
     processMappings: function processMappings(mappings) {
@@ -2185,8 +2185,14 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (response) {
         _this2.contacts = response.data.contacts;
         _this2.isMappingDone = true;
-      })["catch"](function () {
-        _this2.mappingsError = 'Something went wrong while processing the mappings, please do try again';
+      })["catch"](function (error) {
+        if (typeof error.response.data.errors.path !== 'undefined') {
+          _this2.mappingsError = error.response.data.errors.path[0];
+        } else if (typeof error.response.data.errors.mappings !== 'undefined') {
+          _this2.mappingsError = error.response.data.errors.mappings[0];
+        } else {
+          _this2.mappingsError = 'Something went wrong while processing the mappings, please try again';
+        }
       });
     }
   }

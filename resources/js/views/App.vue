@@ -83,8 +83,9 @@ export default {
         this.filePath       = response.data.path;
         this.isFileUploaded = true;
       })
-      .catch((e) => {
-        this.uploadError = 'Something went wrong with the upload, please do try again'
+      .catch((error) => {
+        this.uploadError = error.response.data.errors.file[0] ||
+          'Something went wrong with the upload, please do try again';
       });
     },
 
@@ -92,17 +93,23 @@ export default {
         this.mappingsError = '';
         
         axios.post(
-            this.apiRoutes.processMappings,
-            {
-                mappings,
-                path: this.filePath,
-            }
+          this.apiRoutes.processMappings,
+          {
+            mappings,
+            path: this.filePath,
+          }
         ).then((response) => {
-            this.contacts = response.data.contacts;
-            this.isMappingDone = true;
+          this.contacts = response.data.contacts;
+          this.isMappingDone = true;
         })
-        .catch(() => {
-            this.mappingsError = 'Something went wrong while processing the mappings, please do try again'
+        .catch((error) => {
+          if (typeof error.response.data.errors.path !== 'undefined') {
+            this.mappingsError = error.response.data.errors.path[0];
+          } else if (typeof error.response.data.errors.mappings !== 'undefined') {
+            this.mappingsError = error.response.data.errors.mappings[0];
+          } else {
+            this.mappingsError = 'Something went wrong while processing the mappings, please try again';
+          }
         });
     }
   }
