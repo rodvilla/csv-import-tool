@@ -1,7 +1,21 @@
-# Hi Voxie Chat team!
+# CSV Import Tool
 
-I've received your feedback from the code I submitted for the application. It's all valid and fair points and the only reason I write this is because I feel at least some of the remarks were due to misunderstanding and a lack of time, all being on my side.
+Built for code demonstration only. This tool accepts a CSV file, reads the headers and provides options to match the headers against columns from a DB schema.
 
-I wouldn't want to try and justify myself for each of the points you wrote, but instead wanted to make a final commit and at least leave this code in a way that properly reflects my current skill.
+### Topics related in this tool
+- File Upload with Vue/Laravel
+- Ajax Calls with Axios and promise handling
+- Validation with custom Form Requests and custom Rules
+- Eloquent Relationships
+- HTTP Tests
 
-I'd be glad to have a chat and talk more about my experience developing applications. Cheers!
+### Main application files
+- app/Http/Controllers/HomeController.php
+- app/Http/Controllers/API/ImportCsvController.php
+- app/resources/js/views/App.vue
+- tests/feature/ApplicationTest.php
+
+### Built with
+- Laravel 8
+- Vue 2
+- Tailwind 2
